@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <span
+      class="metadata-marker"
+      style="display: none;"
+      data-region_tag="html-body"
+    ></span>
+
+    <select name="group_id" id="group_id" onchange="set_groups()"></select>
+    <button type="button" onclick="initMap()">Reset all cluster</button>
+    &nbsp;&nbsp;Your&nbsp;Selected&nbsp;:&nbsp;<span id="selected_item"></span>
+    <hr />
+
+    <div id="map"></div>
+
+    <script>
+      var map;
+      var marker;
+      var markers = [];
+      var markerCluster;
+      var selected_item = "";
+
+      var map_center = { lat: 12.9236, lng: 100.8825 };
+      var zoom = 14;
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById("map"));
+
+        map.setOptions({
+          center: map_center,
+          zoom: zoom
+        });
+
+        var labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        var options_label = labels.split("").map(String);
+        var myselect = document.getElementById("group_id");
+        options_label.forEach(function(element) {
+          myselect.options[myselect.options.length] = new Option(
+            "label: " + element,
+            element
+          );
+        });
+
+        for (let index = 1; index < 300; index++) {
+          var label = "";
+          var lat = map_center.lat + parseFloat(Math.random() * 0.03);
+          var lng = map_center.lng + parseFloat(Math.random() * 0.03);
+
+          var position = {
+            lat: lat,
+            lng: lng
+          };
+
+          marker = new google.maps.Marker({
+            map: map,
+            position: position,
+            label: labels[index % labels.length]
+          });
+
+          markers.push(marker);
+        }
+      }
+
+      function set_groups() {
+        var selected_label = document.getElementById("group_id").value;
+        var my_group_selected = markers.filter(function(value) {
+          if (value.label == selected_label) {
+            return value;
+          }
+        });
+
+        selected_item = selected_item + selected_label + ", ";
+        document.getElementById("selected_item").innerHTML = selected_item;
+
+        markerCluster = new MarkerClusterer(map);
+        markerCluster.setMaxZoom(19);
+        markerCluster.setStyles([
+          {
+            textColor: "white",
+            url: "./images/m1.png",
+            height: 50,
+            width: 50
+          }
+        ]);
+
+        markerCluster.addMarkers(my_group_selected);
+      }
+    </script>
+    <script src="./markerclusterer.js"></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&callback=initMap"
+      async
+      defer
+    ></script>
+  </body>
+</html>
